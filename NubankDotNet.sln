@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2740220C-6C65-4908-BDCC-8CBF69D222CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NubankClient", "src\NubankClient\NubankClient.csproj", "{CDD1E5C2-202E-4808-95CD-978685C04F23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NubankClientDemo", "src\NubankClientDemo\NubankClientDemo.csproj", "{CCB5A152-D887-4BEB-9644-157610CD7B2F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|x64.Build.0 = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Debug|x86.Build.0 = Debug|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|x64.ActiveCfg = Release|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|x64.Build.0 = Release|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|x86.ActiveCfg = Release|Any CPU
+		{CDD1E5C2-202E-4808-95CD-978685C04F23}.Release|x86.Build.0 = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|x64.Build.0 = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Debug|x86.Build.0 = Debug|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x64.ActiveCfg = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x64.Build.0 = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x86.ActiveCfg = Release|Any CPU
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CDD1E5C2-202E-4808-95CD-978685C04F23} = {2740220C-6C65-4908-BDCC-8CBF69D222CC}
+		{CCB5A152-D887-4BEB-9644-157610CD7B2F} = {2740220C-6C65-4908-BDCC-8CBF69D222CC}
+	EndGlobalSection
+EndGlobal
