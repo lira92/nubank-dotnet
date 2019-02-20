@@ -7,7 +7,7 @@ namespace NubankClient
     {
         private Dictionary<string, string> _topLevelUrls;
         private Dictionary<string, string> _autenticatedUrls;
-        private const string DISCOVERY = "https://prod-s0-webapp-proxy.nubank.com.br/api/discovery";
+        private const string DISCOVERY = "https://bd224b7a-1d36-4b61-984f-780297250e74.mock.pstmn.io/api/discovery";
 
         public string Login { get => GetTopLevelUrl("login"); }
         public string ResetPassword { get => GetTopLevelUrl("reset_password"); }

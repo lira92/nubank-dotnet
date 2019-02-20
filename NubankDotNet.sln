@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NubankClient", "src\NubankC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NubankClientDemo", "src\NubankClientDemo\NubankClientDemo.csproj", "{CCB5A152-D887-4BEB-9644-157610CD7B2F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FA3390F2-D874-43B6-ABDB-B1A9350EAAB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NubankClient.Tests", "tests\NubankClient.Tests\NubankClient.Tests.csproj", "{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,9 +50,22 @@ Global
 		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x64.Build.0 = Release|Any CPU
 		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x86.ActiveCfg = Release|Any CPU
 		{CCB5A152-D887-4BEB-9644-157610CD7B2F}.Release|x86.Build.0 = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|x64.Build.0 = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CDD1E5C2-202E-4808-95CD-978685C04F23} = {2740220C-6C65-4908-BDCC-8CBF69D222CC}
 		{CCB5A152-D887-4BEB-9644-157610CD7B2F} = {2740220C-6C65-4908-BDCC-8CBF69D222CC}
+		{DA837AD9-61B4-4EE0-827A-0AAF97E425C3} = {FA3390F2-D874-43B6-ABDB-B1A9350EAAB6}
 	EndGlobalSection
 EndGlobal

@@ -23,6 +23,14 @@ namespace NubankClient
             _endpoints = new Endpoints();
         }
 
+        public Nubank(IRestClient restClient, string login, string password)
+        {
+            _login = login;
+            _password = password;
+            _client = restClient;
+            _endpoints = new Endpoints();
+        }
+
         public async Task Login()
         {
             _client.BaseUrl = new Uri(_endpoints.Login);
@@ -36,16 +44,17 @@ namespace NubankClient
             });
             var response = await _client.PostAsync<Dictionary<string, object>>(loginRequest);
             AuthToken = response["access_token"].ToString();
-            var listLinks = ((Dictionary<string, object>)response["_links"])
-                .Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()));
-            _endpoints.AutenticatedUrls = listLinks.ToDictionary(x => x.Key, x => x.Value);
+            var listLinks = ((Dictionary<string, object>)response["_links"]);
+            var listLinksConverted = listLinks
+                .Select(x => new KeyValuePair<string, string>(x.Key, (((Dictionary<string, object>)x.Value)["href"].ToString())));
+            _endpoints.AutenticatedUrls = listLinksConverted.ToDictionary(x => x.Key, x => x.Value);
         }
 
         public async Task<IEnumerable<Event>> GetEvents()
         {
             _client.BaseUrl = new Uri(_endpoints.Events);
             var eventsRequest = new RestRequest();
-            return await _client.GetAsync<List<Event>>(eventsRequest);
+            return (await _client.GetAsync<GetEventsResponse>(eventsRequest)).Events;
         }
     }
 }
