@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Moq;
+using NubankClient.Http;
+using NubankClient.Model;
 using RestSharp;
 using Xunit;
 
@@ -9,26 +12,103 @@ namespace NubankClient.Tests
 {
     public class NubankClientTests
     {
-        private readonly Mock<IRestClient> _mockRestClient;
+        private readonly Mock<IHttpClient> _mockRestClient = new Mock<IHttpClient>();
+        private readonly List<Event> _events;
+
+        public NubankClientTests()
+        {
+            _events = new List<Event>
+            {
+                new Event
+                {
+                    Title = "Test transaction",
+                    Amount = 500,
+                    Category = "transaction",
+                    Description = "Test transaction description",
+                    Time = DateTime.Now.Subtract(TimeSpan.FromDays(1))
+                },
+                new Event
+                {
+                    Title = "Test transaction 2",
+                    Amount = 50,
+                    Category = "transaction",
+                    Description = "Test transaction 2 description",
+                    Time = DateTime.Now.Subtract(TimeSpan.FromDays(2))
+                }
+            };
+        }
 
         [Fact]
-        public async Task ShouldLogin()
+        public async Task ShouldThrowExceptionWhenLoginWasNotCalled()
         {
-            var discoveryData = new Dictionary<string, object>() {
-                { "login", "teste2" }
+            MockDiscoveryRequest();
+
+            MockLoginRequest();
+
+            var getEventsResponse = new GetEventsResponse
+            {
+                Events = _events
             };
 
-            var discoveryResponse =  new Mock<IRestResponse<Dictionary<string, object>>>();
-            discoveryResponse.Setup(_ => _.StatusCode).Returns(HttpStatusCode.OK);
-            discoveryResponse.Setup(_ => _.Data).Returns(discoveryData);
+            _mockRestClient
+                .Setup(x => x.GetAsync<GetEventsResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Dictionary<string, string>>()
+                ))
+                .ReturnsAsync(getEventsResponse);
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => nubankClient.GetEvents());
+        }
+
+        [Fact]
+        public async Task ShouldGetEvents()
+        {
+            MockDiscoveryRequest();
+
+            MockLoginRequest();
+
+            var getEventsResponse = new GetEventsResponse
+            {
+                Events = _events
+            };
 
             _mockRestClient
-                .Setup(x => x.Get<Dictionary<string, object>>(It.IsAny<IRestRequest>()))
-                .Returns(discoveryResponse.Object);
+                .Setup(x => x.GetAsync<GetEventsResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Dictionary<string, string>>()
+                ))
+                .ReturnsAsync(getEventsResponse);
 
-            var eventsLink = new Dictionary<string, object>() { {"href", "teste"} };
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            await nubankClient.Login();
+            var actualEvents = await nubankClient.GetEvents();
+
+            Assert.Equal(_events, actualEvents);
+            _mockRestClient.Verify(x => x.GetAsync<GetEventsResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Dictionary<string, string>>()
+                ), Times.Once());
+        }
+
+        private void MockDiscoveryRequest()
+        {
+            var discoveryData = new Dictionary<string, string>() {
+                { "login", "login_url" }
+            };
+
+            _mockRestClient
+                .Setup(x => x.GetAsync<Dictionary<string, string>>(It.IsAny<string>()))
+                .ReturnsAsync(discoveryData);
+        }
+
+        private void MockLoginRequest()
+        {
+            var eventsLink = new Dictionary<string, object>() { { "href", "events_url" } };
+            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
             var links = new Dictionary<string, object>() {
-                { "events", eventsLink }
+                { "events", eventsLink },
+                { "reset_password", resetPasswordUrl }
             };
 
             var responseLogin = new Dictionary<string, object>() {
@@ -38,17 +118,8 @@ namespace NubankClient.Tests
             };
 
             _mockRestClient
-                .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<IRestRequest>()))
+                .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<string>(), It.IsAny<object>()))
                 .ReturnsAsync(responseLogin);
-
-            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            await nubankClient.Login();
-        }
-
-        [Fact]
-        public void ShouldGetEvents()
-        {
-            Assert.True(false);
         }
     }
 }

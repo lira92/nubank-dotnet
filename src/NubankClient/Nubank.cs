@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NubankClient.Http;
 using NubankClient.Model;
 using RestSharp;
 
@@ -11,7 +12,7 @@ namespace NubankClient
     {
         private readonly string _login;
         private readonly string _password;
-        private readonly IRestClient _client;
+        private readonly IHttpClient _client;
         private readonly Endpoints _endpoints;
         private string AuthToken { get; set; }
 
@@ -19,30 +20,28 @@ namespace NubankClient
         {
             _login = login;
             _password = password;
-            _client = new RestClient();
-            _endpoints = new Endpoints();
+            _client = new HttpClient();
+            _endpoints = new Endpoints(_client);
         }
 
-        public Nubank(IRestClient restClient, string login, string password)
+        public Nubank(IHttpClient httpClient, string login, string password)
         {
             _login = login;
             _password = password;
-            _client = restClient;
-            _endpoints = new Endpoints();
+            _client = httpClient;
+            _endpoints = new Endpoints(_client);
         }
 
         public async Task Login()
         {
-            _client.BaseUrl = new Uri(_endpoints.Login);
-            var loginRequest = new RestRequest();
-            loginRequest.AddJsonBody(new {
+            var body = new {
                 client_id = "other.conta",
                 client_secret = "yQPeLzoHuJzlMMSAjC-LgNUJdUecx8XO",
                 grant_type = "password",
                 login = _login,
                 password = _password
-            });
-            var response = await _client.PostAsync<Dictionary<string, object>>(loginRequest);
+            };
+            var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
             AuthToken = response["access_token"].ToString();
             var listLinks = ((Dictionary<string, object>)response["_links"]);
             var listLinksConverted = listLinks
@@ -52,9 +51,20 @@ namespace NubankClient
 
         public async Task<IEnumerable<Event>> GetEvents()
         {
-            _client.BaseUrl = new Uri(_endpoints.Events);
-            var eventsRequest = new RestRequest();
-            return (await _client.GetAsync<GetEventsResponse>(eventsRequest)).Events;
+            if (string.IsNullOrEmpty(AuthToken))
+            {
+                throw new InvalidOperationException("GetEvents requires the user to be logged in. Make sure that the Login method has been called.");
+            }
+
+            var response = await _client.GetAsync<GetEventsResponse>(_endpoints.Events, GetHeaders());
+            return response.Events;
+        }
+
+        private Dictionary<string, string> GetHeaders()
+        {
+            return new Dictionary<string, string> {
+                { "Authorization", $"Bearer {AuthToken}" }
+            };
         }
     }
 }
