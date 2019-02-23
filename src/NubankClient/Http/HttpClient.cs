@@ -20,9 +20,10 @@ namespace NubankClient.Http
             _client.BaseUrl = new Uri(url);
             var request = new RestRequest();
             headers.ToList().ForEach((KeyValuePair<string, string> header) => {
-                request.AddParameter(header.Key, header.Value);
+                request.AddHeader(header.Key, header.Value);
             });
-            return await _client.GetAsync<T>(request);
+            var response = await Task.FromResult(_client.Get<T>(request));
+            return response.Data;
         }
 
         public async Task<T> PostAsync<T>(string url, object body) where T : new()
