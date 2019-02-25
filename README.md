@@ -19,8 +19,13 @@ dotnet add package NubankClient
 
 ## Usage
 
-  ```csharp
-  var nubankClient = new Nubank(login, password);
-  await nubankClient.Login();
-  var events = await nubankClient.GetEvents();
-  ```
+### Login (Login is required for any other request)
+ ```csharp
+ var nubankClient = new Nubank(login, password);
+ await nubankClient.Login();
+ ```
+  
+ ### Get Events (Transactions, Bill paid, etc.)
+ ```csharp
+ var events = await nubankClient.GetEvents();
+ ```
