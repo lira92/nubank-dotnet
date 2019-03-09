@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Moq;
 using NubankClient.Http;
 using NubankClient.Model;
+using NubankClient.Model.Enums;
 using RestSharp;
 using Xunit;
 
@@ -23,7 +25,7 @@ namespace NubankClient.Tests
                 {
                     Title = "Test transaction",
                     Amount = 500,
-                    Category = "transaction",
+                    Category = EventCategory.Transaction,
                     Description = "Test transaction description",
                     Time = DateTime.Now.Subtract(TimeSpan.FromDays(1))
                 },
@@ -31,11 +33,56 @@ namespace NubankClient.Tests
                 {
                     Title = "Test transaction 2",
                     Amount = 50,
-                    Category = "transaction",
+                    Category = EventCategory.Transaction,
                     Description = "Test transaction 2 description",
                     Time = DateTime.Now.Subtract(TimeSpan.FromDays(2))
                 }
             };
+        }
+
+        [Fact]
+        public async Task ShouldThrowExceptionWithErrorProvidedWhenLoginFailed()
+        {
+            MockDiscoveryRequest();
+
+            const string errorMessage = "error message";
+
+            var loginData = new Dictionary<string, object>() {
+                { "error", errorMessage }
+            };
+
+            _mockRestClient
+                .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync(loginData);
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var exception = await Assert.ThrowsAsync<AuthenticationException>(
+                async () => await nubankClient.Login()
+            );
+
+            Assert.Equal(errorMessage, exception.Message);
+        }
+
+        [Fact]
+        public async Task ShouldThrowExceptionWithGenericMessageWhenLoginFailedAndErrorIsNotPresent()
+        {
+            MockDiscoveryRequest();
+
+            const string errorMessage = "Unknow error occurred on trying to do login on Nubank using the entered credentials";
+
+            var loginData = new Dictionary<string, object>() {
+            };
+
+            _mockRestClient
+                .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync(loginData);
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var exception = await Assert.ThrowsAsync<AuthenticationException>(
+                async () => await nubankClient.Login()
+            );
+
+            Assert.Equal(errorMessage, exception.Message);
         }
 
         [Fact]

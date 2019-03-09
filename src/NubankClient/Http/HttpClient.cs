@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RestRequest = RestSharp.Serializers.Newtonsoft.Json.RestRequest;
 
 namespace NubankClient.Http
 {
@@ -19,7 +20,8 @@ namespace NubankClient.Http
         {
             _client.BaseUrl = new Uri(url);
             var request = new RestRequest();
-            headers.ToList().ForEach((KeyValuePair<string, string> header) => {
+            headers.ToList().ForEach((KeyValuePair<string, string> header) =>
+            {
                 request.AddHeader(header.Key, header.Value);
             });
             var response = await Task.FromResult(_client.Get<T>(request));
@@ -29,7 +31,7 @@ namespace NubankClient.Http
         public async Task<T> PostAsync<T>(string url, object body) where T : new()
         {
             _client.BaseUrl = new Uri(url);
-            var request = new RestRequest();
+            var request = new RestSharp.Serializers.Newtonsoft.Json.RestRequest();
             request.AddJsonBody(body);
             return await _client.PostAsync<T>(request);
         }
