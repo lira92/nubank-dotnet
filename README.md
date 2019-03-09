@@ -32,3 +32,4 @@ dotnet add package NubankClient
  ```csharp
  var events = await nubankClient.GetEvents();
  ```
+ Note: The Nubank api returns amount of events without decimal separators, to get a decimal represent the currency amount with decimal separators use CurrencyAmount property of Event Class.
