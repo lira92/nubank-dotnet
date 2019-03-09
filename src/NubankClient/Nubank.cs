@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using NubankClient.Http;
 using NubankClient.Model;
@@ -42,6 +43,14 @@ namespace NubankClient
                 password = _password
             };
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
+            if (!response.Keys.Any(x => x == "access_token"))
+            {
+                if(response.Keys.Any(x => x == "error"))
+                {
+                    throw new AuthenticationException(response["error"].ToString());
+                }
+                throw new AuthenticationException("Unknow error occurred on trying to do login on Nubank using the entered credentials");
+            }
             AuthToken = response["access_token"].ToString();
             var listLinks = ((Dictionary<string, object>)response["_links"]);
             var listLinksConverted = listLinks
