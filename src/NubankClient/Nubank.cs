@@ -1,11 +1,11 @@
+using NubankClient.Http;
+using NubankClient.Model;
+using NubankClient.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
-using NubankClient.Http;
-using NubankClient.Model;
-using RestSharp;
 
 namespace NubankClient
 {
@@ -33,9 +33,22 @@ namespace NubankClient
             _endpoints = new Endpoints(_client);
         }
 
-        public async Task Login()
+        public async Task<LoginResponse> Login()
         {
-            var body = new {
+            await GetToken();
+
+            if (_endpoints.Events != null)
+            {
+                return new LoginResponse();
+            }
+
+            return new LoginResponse(Guid.NewGuid().ToString());
+        }
+
+        private async Task GetToken()
+        {
+            var body = new
+            {
                 client_id = "other.conta",
                 client_secret = "yQPeLzoHuJzlMMSAjC-LgNUJdUecx8XO",
                 grant_type = "password",
@@ -43,15 +56,47 @@ namespace NubankClient
                 password = _password
             };
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
+
+            FillToken(response);
+
+            FillAutenticatedUrls(response);
+        }
+
+        public async Task AutenticateWithQrCode(string code)
+        {
+            if (string.IsNullOrEmpty(AuthToken))
+            {
+                await GetToken();
+            }
+
+            var payload = new
+            {
+                qr_code_id = code,
+                type = "login-webapp"
+            };
+
+            var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Lift, payload, GetHeaders());
+
+            FillToken(response);
+
+            FillAutenticatedUrls(response);
+        }
+
+        private void FillToken(Dictionary<string, object> response)
+        {
             if (!response.Keys.Any(x => x == "access_token"))
             {
-                if(response.Keys.Any(x => x == "error"))
+                if (response.Keys.Any(x => x == "error"))
                 {
                     throw new AuthenticationException(response["error"].ToString());
                 }
                 throw new AuthenticationException("Unknow error occurred on trying to do login on Nubank using the entered credentials");
             }
             AuthToken = response["access_token"].ToString();
+        }
+
+        private void FillAutenticatedUrls(Dictionary<string, object> response)
+        {
             var listLinks = ((Dictionary<string, object>)response["_links"]);
             var listLinksConverted = listLinks
                 .Select(x => new KeyValuePair<string, string>(x.Key, (((Dictionary<string, object>)x.Value)["href"].ToString())));
