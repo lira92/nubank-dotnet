@@ -86,6 +86,96 @@ namespace NubankClient.Tests
         }
 
         [Fact]
+        public async Task ShouldReturnLoginResponseWithNeedsDeviceAuthorizationWhenEventsNotPresentInLoginResponse()
+        {
+            MockDiscoveryRequest();
+
+            MockLoginRequestWithouEventsUrl();
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var loginResponse = await nubankClient.Login();
+
+            Assert.True(loginResponse.NeedsDeviceAuthorization);
+            Assert.NotNull(loginResponse.Code);
+        }
+
+        [Fact]
+        public async Task ShouldReturnLoginResponseWithNotNeedsDeviceAuthorizationWhenEventsPresentInLoginResponse()
+        {
+            MockDiscoveryRequest();
+
+            MockLoginRequest();
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var loginResponse = await nubankClient.Login();
+
+            Assert.False(loginResponse.NeedsDeviceAuthorization);
+            Assert.Null(loginResponse.Code);
+        }
+
+        [Fact]
+        public async Task ShouldAutenticateWithQrCode()
+        {
+            MockDiscoveryRequest();
+            MockDiscoveryAppRequest();
+
+            MockLoginRequestWithouEventsUrl();
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            var loginResponse = await nubankClient.Login();
+
+            MockLiftRequest(loginResponse.Code);
+
+            await nubankClient.AutenticateWithQrCode(loginResponse.Code);
+
+            var expectedPayload = new
+            {
+                qr_code_id = loginResponse.Code,
+                type = "login-webapp"
+            };
+
+            _mockRestClient.Verify(x => x.PostAsync<Dictionary<string, object>>(
+                "lift_url",
+                It.Is<object>(o => o.GetHashCode() == expectedPayload.GetHashCode()),
+                It.Is<Dictionary<string, string>>(dictionary => IsValidAuthorizationHeader(dictionary))
+                ), Times.Once());
+        }
+
+        private bool IsValidAuthorizationHeader(Dictionary<string, string> dictionary)
+        {
+            return dictionary.ContainsKey("Authorization")
+                && !string.IsNullOrEmpty(dictionary["Authorization"])
+                && !string.IsNullOrEmpty(dictionary["Authorization"].Replace("Bearer ", ""));
+        }
+
+        [Fact]
+        public async Task ShouldGetTokenIfAutenticateWithQrCodeIsCalledWithoutLoginMade()
+        {
+            MockDiscoveryRequest();
+            MockDiscoveryAppRequest();
+
+            MockLoginRequestWithouEventsUrl();
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+
+            var code = Guid.NewGuid().ToString();
+
+            MockLiftRequest(code);
+
+            await nubankClient.AutenticateWithQrCode(code);
+
+            var expectedPayload = new
+            {
+                qr_code_id = code,
+                type = "login-webapp"
+            };
+
+            _mockRestClient.Verify(x => x.PostAsync<Dictionary<string, object>>(
+                    "lift_url",
+                    It.Is<object>(o => o.GetHashCode() == expectedPayload.GetHashCode()),
+                    It.Is<Dictionary<string, string>>(dictionary => IsValidAuthorizationHeader(dictionary))
+                ), Times.Once());
+        }
+
+        [Fact]
         public async Task ShouldThrowExceptionWhenLoginWasNotCalled()
         {
             MockDiscoveryRequest();
@@ -145,7 +235,7 @@ namespace NubankClient.Tests
             };
 
             _mockRestClient
-                .Setup(x => x.GetAsync<Dictionary<string, string>>(It.IsAny<string>()))
+                .Setup(x => x.GetAsync<Dictionary<string, string>>("https://prod-s0-webapp-proxy.nubank.com.br/api/discovery"))
                 .ReturnsAsync(discoveryData);
         }
 
@@ -167,6 +257,59 @@ namespace NubankClient.Tests
             _mockRestClient
                 .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<string>(), It.IsAny<object>()))
                 .ReturnsAsync(responseLogin);
+        }
+
+        private void MockLoginRequestWithouEventsUrl()
+        {
+            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
+            var links = new Dictionary<string, object>() {
+                { "reset_password", resetPasswordUrl }
+            };
+
+            var responseLogin = new Dictionary<string, object>() {
+                { "access_token", "eyJhbGciOiJSUzI1Ni" },
+                { "token_type", "bearer" },
+                { "_links", links },
+            };
+
+            _mockRestClient
+                .Setup(x => x.PostAsync<Dictionary<string, object>>("login_url", It.IsAny<object>()))
+                .ReturnsAsync(responseLogin);
+        }
+
+        private void MockLiftRequest(string code)
+        {
+            var eventsLink = new Dictionary<string, object>() { { "href", "events_url" } };
+            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
+            var links = new Dictionary<string, object>() {
+                { "events", eventsLink },
+                { "reset_password", resetPasswordUrl }
+            };
+
+            var responseLift = new Dictionary<string, object>() {
+                { "access_token", "eyJhbGciOiJSUzI1Ni" },
+                { "token_type", "bearer" },
+                { "_links", links },
+            };
+
+            _mockRestClient
+                .Setup(x => x.PostAsync<Dictionary<string, object>>(
+                    "lift_url",
+                    It.IsAny<object>(),
+                    It.IsAny<Dictionary<string, string>>())
+                 )
+                .ReturnsAsync(responseLift);
+        }
+
+        private void MockDiscoveryAppRequest()
+        {
+            var discoveryData = new Dictionary<string, string>() {
+                { "lift", "lift_url" }
+            };
+
+            _mockRestClient
+                .Setup(x => x.GetAsync<Dictionary<string, string>>("https://prod-s0-webapp-proxy.nubank.com.br/api/app/discovery"))
+                .ReturnsAsync(discoveryData);
         }
     }
 }
