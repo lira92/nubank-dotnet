@@ -5,7 +5,7 @@
 
 Unofficial Nubank client for .Net. This project was based in this [repo](https://github.com/lmansur/nubank-ruby) and in this [post](https://rhnasc.com/automation/golang/lamba/portuguese/2018/06/25/automating-nubank.html).
 
-## Instalation
+## Installation
 
 This package is available through Nuget Packages: https://www.nuget.org/packages/NubankClient
  
