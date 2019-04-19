@@ -41,7 +41,7 @@ namespace NubankClient.Http
             _client.BaseUrl = new Uri(url);
             var request = new RestRequest();
             headers.ToList().ForEach((KeyValuePair<string, string> header) => {
-                request.AddParameter(header.Key, header.Value);
+                request.AddHeader(header.Key, header.Value);
             });
             request.AddJsonBody(body);
             return await _client.PostAsync<T>(request);

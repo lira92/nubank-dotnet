@@ -27,6 +27,42 @@ dotnet add package NubankClient
  var nubankClient = new Nubank(login, password);
  await nubankClient.Login();
  ```
+
+ ### Device Authorization
+
+Login in most part of devices is asking for authorization through QR Code, Nubank Client returns a response that indicate if device authorization is needed when login is requested. See an example:
+ ```csharp
+ var nubankClient = new Nubank(login, password);
+ var loginResponse = await nubankClient.Login();
+ if (loginResponse.NeedsDeviceAuthorization) {
+    var qrcode = loginResponse.GetQrCodeAsAscii();
+    // Here you can get qrcode as bitmap too.
+    // var qrcode = loginResponse.GetQrCodeAsBitmap();
+
+    // Now the user needs to scan QRCode using your device.
+    // The user needs to access nubank in his smartphone and navigate to menu: Nu(Seu Nome) > Perfil > Acesso pelo site.
+    // After user scan QRCode:
+    await nubankClient.AutenticateWithQrCode(loginResponse.Code);
+ }
+ ```
+
+If you need, it is possible to make the process asynchronous like this:
+ ```csharp
+ var nubankClient = new Nubank(login, password);
+ var loginResponse = await nubankClient.Login();
+ if (loginResponse.NeedsDeviceAuthorization) {
+   var qrcode = loginResponse.GetQrCodeAsAscii();
+
+   //Do something with QrCode, save, send, whatever.
+ }
+ ```
+ After user scan QrCode, you can create another NubankClient and you can by pass login.
+
+```csharp
+ var nubankClient = new Nubank(login, password);
+ await nubankClient.AutenticateWithQrCode(previousGeneratedCode);
+ // Now you can get events
+ ```
   
  ### Get Events (Transactions, Bill paid, etc.)
  ```csharp
