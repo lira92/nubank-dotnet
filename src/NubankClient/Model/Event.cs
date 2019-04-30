@@ -14,5 +14,6 @@ namespace NubankClient.Model
         public decimal CurrencyAmount => (Amount / 100);
         public DateTime Time { get; set; }
         public string Title { get; set; }
+        public string Message { get; set; }
     }
 }

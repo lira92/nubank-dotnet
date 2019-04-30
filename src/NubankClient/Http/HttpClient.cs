@@ -1,4 +1,5 @@
 ﻿using RestSharp;
+using RestSharp.Serializers.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,10 @@ namespace NubankClient.Http
     class HttpClient : IHttpClient
     {
         private readonly IRestClient _client = new RestClient();
+        public HttpClient()
+        {
+            _client.AddHandler("application/json", new NewtonsoftJsonSerializer());
+        }
         public async Task<T> GetAsync<T>(string url) where T : new()
         {
             _client.BaseUrl = new Uri(url);
@@ -31,7 +36,7 @@ namespace NubankClient.Http
         public async Task<T> PostAsync<T>(string url, object body) where T : new()
         {
             _client.BaseUrl = new Uri(url);
-            var request = new RestSharp.Serializers.Newtonsoft.Json.RestRequest();
+            var request = new RestRequest();
             request.AddJsonBody(body);
             return await _client.PostAsync<T>(request);
         }

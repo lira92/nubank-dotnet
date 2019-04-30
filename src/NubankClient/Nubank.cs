@@ -16,6 +16,7 @@ namespace NubankClient
         private readonly IHttpClient _client;
         private readonly Endpoints _endpoints;
         private string AuthToken { get; set; }
+        private string RefreshToken { get; set; }
 
         public Nubank(string login, string password)
         {
@@ -42,7 +43,30 @@ namespace NubankClient
                 return new LoginResponse();
             }
 
+            await TryToAutenticateWithRefreshToken();
+
+            if (_endpoints.Events != null)
+            {
+                return new LoginResponse();
+            }
+
             return new LoginResponse(Guid.NewGuid().ToString());
+        }
+
+        private async Task TryToAutenticateWithRefreshToken()
+        {
+            var body = new
+            {
+                grant_type = "refresh_token",
+                refresh_token = RefreshToken,
+                client_id = "other.conta",
+                client_secret=  "yQPeLzoHuJzlMMSAjC-LgNUJdUecx8XO"
+            };
+            var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
+
+            FillTokens(response);
+
+            FillAutenticatedUrls(response);
         }
 
         private async Task GetToken()
@@ -57,7 +81,7 @@ namespace NubankClient
             };
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
 
-            FillToken(response);
+            FillTokens(response);
 
             FillAutenticatedUrls(response);
         }
@@ -77,12 +101,12 @@ namespace NubankClient
 
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Lift, payload, GetHeaders());
 
-            FillToken(response);
+            FillTokens(response);
 
             FillAutenticatedUrls(response);
         }
 
-        private void FillToken(Dictionary<string, object> response)
+        private void FillTokens(Dictionary<string, object> response)
         {
             if (!response.Keys.Any(x => x == "access_token"))
             {
@@ -93,6 +117,7 @@ namespace NubankClient
                 throw new AuthenticationException("Unknow error occurred on trying to do login on Nubank using the entered credentials");
             }
             AuthToken = response["access_token"].ToString();
+            RefreshToken = response["refresh_token"].ToString();
         }
 
         private void FillAutenticatedUrls(Dictionary<string, object> response)
