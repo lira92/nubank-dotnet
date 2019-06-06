@@ -56,7 +56,7 @@ If you need, it is possible to make the process asynchronous like this:
    //Do something with QrCode, save, send, whatever.
  }
  ```
- After user scan QrCode, you can create another NubankClient and you can by pass login.
+ After user scan QrCode, you can create another NubankClient and you can bypass login.
 
 ```csharp
  var nubankClient = new Nubank(login, password);
