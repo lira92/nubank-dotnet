@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using NubankClient.Model.Enums;
 using System;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace NubankClient.Converters
 {
@@ -21,6 +23,7 @@ namespace NubankClient.Converters
             var enumType = isNullable ? Nullable.GetUnderlyingType(objectType) : objectType;
 
             var names = Enum.GetNames(enumType);
+            var options = names.Select(n => (Enum)Enum.Parse(enumType, n));
 
             if (reader.TokenType == JsonToken.String)
             {
@@ -28,12 +31,14 @@ namespace NubankClient.Converters
 
                 if (!string.IsNullOrEmpty(enumText))
                 {
-                    var match = names
-                        .FirstOrDefault(n => string.Equals(n, enumText, StringComparison.OrdinalIgnoreCase));
+                    var match = options
+                        .FirstOrDefault(n => {
+                            return string.Equals(n.GetJsonValue(), enumText, StringComparison.OrdinalIgnoreCase);
+                        });
 
                     if (match != null)
                     {
-                        return Enum.Parse(enumType, match);
+                        return match;
                     }
                 }
             }
@@ -71,6 +76,18 @@ namespace NubankClient.Converters
         private static bool IsNullableType(Type t)
         {
             return (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>));
+        }
+    }
+
+    static class EventCategoryExtensions
+    {
+        public static string GetJsonValue(this Enum @enum)
+        {
+            var fieldInfo = @enum.GetType().GetField(@enum.ToString());
+
+            return !(Attribute.GetCustomAttribute(fieldInfo, typeof(EnumMemberAttribute)) is EnumMemberAttribute attribute)
+                ? @enum.ToString()
+                : attribute.Value;
         }
     }
 }

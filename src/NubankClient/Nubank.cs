@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using NubankClient.Http;
 using NubankClient.Model;
 using NubankClient.Responses;
@@ -16,6 +17,7 @@ namespace NubankClient
         private readonly IHttpClient _client;
         private readonly Endpoints _endpoints;
         private string AuthToken { get; set; }
+        private string RefreshToken { get; set; }
 
         public Nubank(string login, string password)
         {
@@ -33,9 +35,9 @@ namespace NubankClient
             _endpoints = new Endpoints(_client);
         }
 
-        public async Task<LoginResponse> Login()
+        public async Task<LoginResponse> LoginAsync()
         {
-            await GetToken();
+            await GetTokenAsync();
 
             if (_endpoints.Events != null)
             {
@@ -45,7 +47,7 @@ namespace NubankClient
             return new LoginResponse(Guid.NewGuid().ToString());
         }
 
-        private async Task GetToken()
+        private async Task GetTokenAsync()
         {
             var body = new
             {
@@ -57,16 +59,16 @@ namespace NubankClient
             };
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Login, body);
 
-            FillToken(response);
+            FillTokens(response);
 
             FillAutenticatedUrls(response);
         }
 
-        public async Task AutenticateWithQrCode(string code)
+        public async Task AutenticateWithQrCodeAsync(string code)
         {
             if (string.IsNullOrEmpty(AuthToken))
             {
-                await GetToken();
+                await GetTokenAsync();
             }
 
             var payload = new
@@ -77,12 +79,12 @@ namespace NubankClient
 
             var response = await _client.PostAsync<Dictionary<string, object>>(_endpoints.Lift, payload, GetHeaders());
 
-            FillToken(response);
+            FillTokens(response);
 
             FillAutenticatedUrls(response);
         }
 
-        private void FillToken(Dictionary<string, object> response)
+        private void FillTokens(Dictionary<string, object> response)
         {
             if (!response.Keys.Any(x => x == "access_token"))
             {
@@ -97,13 +99,16 @@ namespace NubankClient
 
         private void FillAutenticatedUrls(Dictionary<string, object> response)
         {
-            var listLinks = ((Dictionary<string, object>)response["_links"]);
-            var listLinksConverted = listLinks
-                .Select(x => new KeyValuePair<string, string>(x.Key, (((Dictionary<string, object>)x.Value)["href"].ToString())));
-            _endpoints.AutenticatedUrls = listLinksConverted.ToDictionary(x => x.Key, x => x.Value);
+            var listLinks = (JObject)response["_links"];
+            var properties = listLinks.Properties();
+            var values = listLinks.Values();
+            _endpoints.AutenticatedUrls = listLinks
+                .Properties()
+                .Select(x => new KeyValuePair<string, string>(x.Name, (string)listLinks[x.Name]["href"]))
+                .ToDictionary(key => key.Key, key => key.Value);
         }
 
-        public async Task<IEnumerable<Event>> GetEvents()
+        public async Task<IEnumerable<Event>> GetEventsAsync()
         {
             if (string.IsNullOrEmpty(AuthToken))
             {
