@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Security.Authentication;
-using System.Threading.Tasks;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NubankClient.Http;
 using NubankClient.Model;
 using NubankClient.Model.Enums;
-using RestSharp;
+using System;
+using System.Collections.Generic;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace NubankClient.Tests
@@ -47,7 +46,7 @@ namespace NubankClient.Tests
 
             const string errorMessage = "error message";
 
-            var loginData = new Dictionary<string, object>() {
+            var loginData = new Dictionary<string, object> {
                 { "error", errorMessage }
             };
 
@@ -57,7 +56,7 @@ namespace NubankClient.Tests
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
             var exception = await Assert.ThrowsAsync<AuthenticationException>(
-                async () => await nubankClient.Login()
+                async () => await nubankClient.LoginAsync()
             );
 
             Assert.Equal(errorMessage, exception.Message);
@@ -70,8 +69,7 @@ namespace NubankClient.Tests
 
             const string errorMessage = "Unknow error occurred on trying to do login on Nubank using the entered credentials";
 
-            var loginData = new Dictionary<string, object>() {
-            };
+            var loginData = new Dictionary<string, object>();
 
             _mockRestClient
                 .Setup(x => x.PostAsync<Dictionary<string, object>>(It.IsAny<string>(), It.IsAny<object>()))
@@ -79,7 +77,7 @@ namespace NubankClient.Tests
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
             var exception = await Assert.ThrowsAsync<AuthenticationException>(
-                async () => await nubankClient.Login()
+                async () => await nubankClient.LoginAsync()
             );
 
             Assert.Equal(errorMessage, exception.Message);
@@ -93,7 +91,7 @@ namespace NubankClient.Tests
             MockLoginRequestWithouEventsUrl();
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            var loginResponse = await nubankClient.Login();
+            var loginResponse = await nubankClient.LoginAsync();
 
             Assert.True(loginResponse.NeedsDeviceAuthorization);
             Assert.NotNull(loginResponse.Code);
@@ -107,7 +105,7 @@ namespace NubankClient.Tests
             MockLoginRequest();
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            var loginResponse = await nubankClient.Login();
+            var loginResponse = await nubankClient.LoginAsync();
 
             Assert.False(loginResponse.NeedsDeviceAuthorization);
             Assert.Null(loginResponse.Code);
@@ -121,11 +119,11 @@ namespace NubankClient.Tests
 
             MockLoginRequestWithouEventsUrl();
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            var loginResponse = await nubankClient.Login();
+            var loginResponse = await nubankClient.LoginAsync();
 
             MockLiftRequest(loginResponse.Code);
 
-            await nubankClient.AutenticateWithQrCode(loginResponse.Code);
+            await nubankClient.AutenticateWithQrCodeAsync(loginResponse.Code);
 
             var expectedPayload = new
             {
@@ -140,7 +138,7 @@ namespace NubankClient.Tests
                 ), Times.Once());
         }
 
-        private bool IsValidAuthorizationHeader(Dictionary<string, string> dictionary)
+        private static bool IsValidAuthorizationHeader(Dictionary<string, string> dictionary)
         {
             return dictionary.ContainsKey("Authorization")
                 && !string.IsNullOrEmpty(dictionary["Authorization"])
@@ -160,7 +158,7 @@ namespace NubankClient.Tests
 
             MockLiftRequest(code);
 
-            await nubankClient.AutenticateWithQrCode(code);
+            await nubankClient.AutenticateWithQrCodeAsync(code);
 
             var expectedPayload = new
             {
@@ -195,7 +193,7 @@ namespace NubankClient.Tests
                 .ReturnsAsync(getEventsResponse);
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => nubankClient.GetEvents());
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => nubankClient.GetEventsAsync());
         }
 
         [Fact]
@@ -218,8 +216,8 @@ namespace NubankClient.Tests
                 .ReturnsAsync(getEventsResponse);
 
             var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
-            await nubankClient.Login();
-            var actualEvents = await nubankClient.GetEvents();
+            await nubankClient.LoginAsync();
+            var actualEvents = await nubankClient.GetEventsAsync();
 
             Assert.Equal(_events, actualEvents);
             _mockRestClient.Verify(x => x.GetAsync<GetEventsResponse>(
@@ -230,7 +228,7 @@ namespace NubankClient.Tests
 
         private void MockDiscoveryRequest()
         {
-            var discoveryData = new Dictionary<string, string>() {
+            var discoveryData = new Dictionary<string, string> {
                 { "login", "login_url" }
             };
 
@@ -241,14 +239,12 @@ namespace NubankClient.Tests
 
         private void MockLoginRequest()
         {
-            var eventsLink = new Dictionary<string, object>() { { "href", "events_url" } };
-            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
-            var links = new Dictionary<string, object>() {
-                { "events", eventsLink },
-                { "reset_password", resetPasswordUrl }
-            };
+            var eventsLink = new Dictionary<string, object> { { "href", "events_url" } };
+            var resetPasswordUrl = new Dictionary<string, object> { { "href", "reset_password_url" } };
 
-            var responseLogin = new Dictionary<string, object>() {
+            var links = JObject.Parse("{\"events\": { \"href\": \"events_url\"}, \"reset_password\": { \"href\": \"reset_password_url\"}}");
+
+            var responseLogin = new Dictionary<string, object> {
                 { "access_token", "eyJhbGciOiJSUzI1Ni" },
                 { "token_type", "bearer" },
                 { "_links", links },
@@ -261,12 +257,9 @@ namespace NubankClient.Tests
 
         private void MockLoginRequestWithouEventsUrl()
         {
-            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
-            var links = new Dictionary<string, object>() {
-                { "reset_password", resetPasswordUrl }
-            };
+            var links = JObject.Parse("{\"account_emergency\": { \"href\": \"account_emergency_url\"}}");
 
-            var responseLogin = new Dictionary<string, object>() {
+            var responseLogin = new Dictionary<string, object> {
                 { "access_token", "eyJhbGciOiJSUzI1Ni" },
                 { "token_type", "bearer" },
                 { "_links", links },
@@ -279,14 +272,9 @@ namespace NubankClient.Tests
 
         private void MockLiftRequest(string code)
         {
-            var eventsLink = new Dictionary<string, object>() { { "href", "events_url" } };
-            var resetPasswordUrl = new Dictionary<string, object>() { { "href", "reset_password_url" } };
-            var links = new Dictionary<string, object>() {
-                { "events", eventsLink },
-                { "reset_password", resetPasswordUrl }
-            };
+            var links = JObject.Parse("{\"events\": { \"href\": \"events_url\"}, \"reset_password\": { \"href\": \"reset_password_url\"}}");
 
-            var responseLift = new Dictionary<string, object>() {
+            var responseLift = new Dictionary<string, object> {
                 { "access_token", "eyJhbGciOiJSUzI1Ni" },
                 { "token_type", "bearer" },
                 { "_links", links },
@@ -303,12 +291,13 @@ namespace NubankClient.Tests
 
         private void MockDiscoveryAppRequest()
         {
-            var discoveryData = new Dictionary<string, string>() {
-                { "lift", "lift_url" }
+            var discoveryData = new Dictionary<string, object> {
+                { "lift", "lift_url" },
+                { "faq", JObject.Parse("{ \"android\": \"faq_android_url\"}") }
             };
 
             _mockRestClient
-                .Setup(x => x.GetAsync<Dictionary<string, string>>("https://prod-s0-webapp-proxy.nubank.com.br/api/app/discovery"))
+                .Setup(x => x.GetAsync<Dictionary<string, object>>("https://prod-s0-webapp-proxy.nubank.com.br/api/app/discovery"))
                 .ReturnsAsync(discoveryData);
         }
     }

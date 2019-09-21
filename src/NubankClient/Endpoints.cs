@@ -1,5 +1,6 @@
 using NubankClient.Http;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NubankClient
 {
@@ -16,6 +17,7 @@ namespace NubankClient
         public Endpoints(IHttpClient httpClient)
         {
             _client = httpClient;
+            _autenticatedUrls = new Dictionary<string, string>();
         }
 
         public string Login => GetTopLevelUrl("login");
@@ -57,12 +59,16 @@ namespace NubankClient
 
         private void DiscoverApp()
         {
-            var response = _client.GetAsync<Dictionary<string, string>>(DiscoveryAppUrl)
+            var response = _client.GetAsync<Dictionary<string, object>>(DiscoveryAppUrl)
                 .GetAwaiter().GetResult();
-            _appUrls = response;
+
+            _appUrls = response
+                .Where(x => x.Value is string)
+                .Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString()))
+                .ToDictionary(x => x.Key, x => x.Value.ToString());
         }
 
-        private string GetKey(string key, Dictionary<string, string> source)
+        private static string GetKey(string key, Dictionary<string, string> source)
         {
             if (!source.ContainsKey(key))
             {
