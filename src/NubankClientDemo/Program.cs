@@ -30,7 +30,7 @@ namespace NubankClientDemo
                     Directory.CreateDirectory(directory);
                 }
 
-                var filename = Path.Combine(directory, DateTime.Now.ToString("yyyyMMddHH:mm") + ".jpg");
+                var filename = Path.Combine(directory, DateTime.Now.ToString("yyyyMMddHHmm") + ".jpg");
                 result
                     .GetQrCodeAsBitmap()
                     .Save(filename);
