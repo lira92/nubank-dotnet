@@ -18,24 +18,15 @@ namespace NubankClientDemo
             var password = Console.ReadLine().Trim();
             var nubankClient = new Nubank(login, password);
             var result = await nubankClient.LoginAsync();
+
             if (result.NeedsDeviceAuthorization)
             {
                 Console.WriteLine("You must authenticate with your phone to be able to access your data.");
                 Console.WriteLine("Scan the QRCode below with you Nubank application on the following menu:");
                 Console.WriteLine("Nu(Seu Nome) > Perfil > Acesso pelo site");
-                Console.WriteLine();
-                var directory = Path.Combine(Directory.GetCurrentDirectory(), "qrcodes");
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                var filename = Path.Combine(directory, DateTime.Now.ToString("yyyyMMddHH:mm") + ".jpg");
-                result
-                    .GetQrCodeAsBitmap()
-                    .Save(filename);
-
-                Console.WriteLine($"Open the file '{filename}' and use your phone to scan and after this press any key to continue...");
+                Console.WriteLine();                                
+                Console.WriteLine(result.GetQrCodeAsAscii());
+                Console.WriteLine($"Use your phone to scan and after this press any key to continue...");
                 Console.ReadKey();
 
                 await nubankClient.AutenticateWithQrCodeAsync(result.Code);
