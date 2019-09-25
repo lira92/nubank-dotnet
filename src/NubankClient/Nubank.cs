@@ -20,12 +20,8 @@ namespace NubankClient
         private string RefreshToken { get; set; }
 
         public Nubank(string login, string password)
-        {
-            _login = login;
-            _password = password;
-            _client = new HttpClient();
-            _endpoints = new Endpoints(_client);
-        }
+            : this(new HttpClient(), login, password)
+        { }
 
         public Nubank(IHttpClient httpClient, string login, string password)
         {
