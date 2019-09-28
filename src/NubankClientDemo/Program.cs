@@ -1,4 +1,5 @@
 ﻿using ConsoleTables;
+using Newtonsoft.Json;
 using NubankClient;
 using NubankClient.Model;
 using System;
@@ -24,17 +25,31 @@ namespace NubankClientDemo
                 Console.WriteLine("You must authenticate with your phone to be able to access your data.");
                 Console.WriteLine("Scan the QRCode below with you Nubank application on the following menu:");
                 Console.WriteLine("Nu(Seu Nome) > Perfil > Acesso pelo site");
-                Console.WriteLine();                                
+                Console.WriteLine();
                 Console.WriteLine(result.GetQrCodeAsAscii());
                 Console.WriteLine($"Use your phone to scan and after this press any key to continue...");
                 Console.ReadKey();
 
                 await nubankClient.AutenticateWithQrCodeAsync(result.Code);
             }
+
+            try
+            {
+                var savings = await nubankClient.GetSavingsAsync();
+
+                ConsoleTable
+                    .From(savings)
+                    .Write(Format.Alternative);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
             var events = await nubankClient.GetEventsAsync();
 
             ConsoleTable
-                .From<Event>(events)
+                .From(events)
                 .Write(Format.Alternative);
 
             Console.ReadKey();

@@ -15,6 +15,7 @@ namespace NubankClient.Tests
     {
         private readonly Mock<IHttpClient> _mockRestClient = new Mock<IHttpClient>();
         private readonly List<Event> _events;
+        private readonly List<Saving> _savings;
 
         public NubankClientTests()
         {
@@ -35,6 +36,28 @@ namespace NubankClient.Tests
                     Category = EventCategory.Transaction,
                     Description = "Test transaction 2 description",
                     Time = DateTime.Now.Subtract(TimeSpan.FromDays(2))
+                }
+            };
+
+            _savings = new List<Saving>()
+            {
+                new Saving
+                {
+                    Title = "Transferência enviada",
+                    Amount = 500,
+                    TypeName = SavingType.TransferOutEvent,
+                    Detail = "Renato - R$ 500,00",
+                    PostDate = DateTime.Now.Subtract(TimeSpan.FromDays(1)),
+                    DestinationAccount = new Account() {Name = "Renato"}
+                },
+                new Saving
+                {
+                    Title = "Transferência recebida",
+                    Amount = 50,
+                    TypeName = SavingType.TransferInEvent,
+                    Detail = "R$ 50,00",
+                    PostDate = DateTime.Now.Subtract(TimeSpan.FromDays(1)),
+                    OriginAccount = new Account() {Name = "Renato"}
                 }
             };
         }
@@ -222,6 +245,42 @@ namespace NubankClient.Tests
             Assert.Equal(_events, actualEvents);
             _mockRestClient.Verify(x => x.GetAsync<GetEventsResponse>(
                     It.IsAny<string>(),
+                    It.IsAny<Dictionary<string, string>>()
+                ), Times.Once());
+        }
+
+        [Fact]
+        public async Task ShouldGetSavings()
+        {
+            MockDiscoveryRequest();
+
+            MockLoginRequest();
+
+            var getSavingsResponse = new GetSavingsResponse()
+            {
+                Data = new DataResponse()
+                {
+                    Viewer = new ViewerResponse() { SavingsAccount = new SavingsAccount() { Feed = _savings } }
+                }
+            };
+
+            _mockRestClient
+                .Setup(x => x.PostAsync<GetSavingsResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
+                    It.IsAny<Dictionary<string, string>>()
+                ))
+                .ReturnsAsync(getSavingsResponse);
+
+            var nubankClient = new Nubank(_mockRestClient.Object, "login", "password");
+            await nubankClient.LoginAsync();
+            var actualSavings = await nubankClient.GetSavingsAsync();
+
+            Assert.Equal(_savings, actualSavings);
+
+            _mockRestClient.Verify(x => x.PostAsync<GetSavingsResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<object>(),
                     It.IsAny<Dictionary<string, string>>()
                 ), Times.Once());
         }
