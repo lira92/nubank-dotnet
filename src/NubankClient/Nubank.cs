@@ -1,7 +1,8 @@
 using Newtonsoft.Json.Linq;
 using NubankClient.Http;
-using NubankClient.Model;
-using NubankClient.Responses;
+using NubankClient.Model.Events;
+using NubankClient.Model.Login;
+using NubankClient.Model.Savings;
 using System;
 using System.Collections.Generic;
 using System.Linq;

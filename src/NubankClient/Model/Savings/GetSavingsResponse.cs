@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace NubankClient.Model
+namespace NubankClient.Model.Savings
 {
     public class GetSavingsResponse
     {

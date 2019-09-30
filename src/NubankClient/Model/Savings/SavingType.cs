@@ -1,4 +1,4 @@
-﻿namespace NubankClient.Model
+﻿namespace NubankClient.Model.Savings
 {
     public enum SavingType
     {

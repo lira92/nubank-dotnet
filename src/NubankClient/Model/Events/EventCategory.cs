@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace NubankClient.Model.Enums
+namespace NubankClient.Model.Events
 {
     public enum EventCategory
     {

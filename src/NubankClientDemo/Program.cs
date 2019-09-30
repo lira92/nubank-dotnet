@@ -1,9 +1,6 @@
 ﻿using ConsoleTables;
-using Newtonsoft.Json;
 using NubankClient;
-using NubankClient.Model;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace NubankClientDemo

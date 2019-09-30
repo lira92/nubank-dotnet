@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace NubankClient.Model
+namespace NubankClient.Model.Events
 {
     public class GetEventsResponse
     {

@@ -3,7 +3,7 @@ using NubankClient.Converters;
 using System;
 using System.Diagnostics;
 
-namespace NubankClient.Model
+namespace NubankClient.Model.Savings
 {
     [DebuggerDisplay("{PostDate} - {Title} - {Amount} - {TypeName}")]
     public class Saving

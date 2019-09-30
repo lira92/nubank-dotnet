@@ -1,8 +1,8 @@
 using Moq;
 using Newtonsoft.Json.Linq;
 using NubankClient.Http;
-using NubankClient.Model;
-using NubankClient.Model.Enums;
+using NubankClient.Model.Events;
+using NubankClient.Model.Savings;
 using System;
 using System.Collections.Generic;
 using System.Security.Authentication;
