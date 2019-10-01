@@ -1,9 +1,8 @@
 using Newtonsoft.Json;
 using NubankClient.Converters;
-using NubankClient.Model.Enums;
 using System;
 
-namespace NubankClient.Model
+namespace NubankClient.Model.Events
 {
     public class Event
     {
@@ -11,7 +10,7 @@ namespace NubankClient.Model
         [JsonConverter(typeof(TolerantEnumConverter))]
         public EventCategory Category { get; set; }
         public decimal Amount { get; set; }
-        public decimal CurrencyAmount => (Amount / 100);
+        public decimal CurrencyAmount => Amount / 100;
         public DateTime Time { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
