@@ -1,7 +1,7 @@
 ﻿using QRCoder;
 using System.Drawing;
 
-namespace NubankClient.Responses
+namespace NubankClient.Model.Login
 {
     public class LoginResponse
     {

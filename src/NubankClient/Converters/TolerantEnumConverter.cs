@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using NubankClient.Model.Enums;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;

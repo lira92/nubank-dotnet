@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NubankClient
 {
-    class Endpoints
+    internal class Endpoints
     {
         private readonly IHttpClient _client;
 
@@ -15,7 +15,7 @@ namespace NubankClient
         private const string DiscoveryAppUrl = "https://prod-s0-webapp-proxy.nubank.com.br/api/app/discovery";
 
         public Endpoints(IHttpClient httpClient)
-        {
+        {            
             _client = httpClient;
             _autenticatedUrls = new Dictionary<string, string>();
         }
@@ -24,6 +24,7 @@ namespace NubankClient
         public string ResetPassword => GetTopLevelUrl("reset_password");
         public string Events => GetAutenticatedUrl("events");
         public string Lift => GetAppUrl("lift");
+        public string GraphQl => GetAutenticatedUrl("ghostflame");
 
         public Dictionary<string, string> AutenticatedUrls { set => _autenticatedUrls = value; }
 

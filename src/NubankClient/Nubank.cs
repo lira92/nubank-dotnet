@@ -1,7 +1,8 @@
 using Newtonsoft.Json.Linq;
 using NubankClient.Http;
-using NubankClient.Model;
-using NubankClient.Responses;
+using NubankClient.Model.Events;
+using NubankClient.Model.Login;
+using NubankClient.Model.Savings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,20 +13,17 @@ namespace NubankClient
 {
     public class Nubank
     {
+        private const string StatementGraphQl = "{\n   \"query\": \"{\\r    viewer {\\r        savingsAccount {\\r            feed {\\r                id\\r                __typename\\r                title\\r                detail\\r                postDate\\r                ... on TransferInEvent {\\r                    amount\\r                    originAccount {\\r                        name\\r                    }\\r                }\\r                ... on TransferOutEvent {\\r                    amount\\r                    destinationAccount {\\r                        name\\r                    }\\r                }\\r                ... on BarcodePaymentEvent {\\r                    amount\\r                }\\r            }\\r        }\\r    }\\r}\"\n}";
+        
         private readonly string _login;
         private readonly string _password;
         private readonly IHttpClient _client;
         private readonly Endpoints _endpoints;
-        private string AuthToken { get; set; }
-        private string RefreshToken { get; set; }
-
+        private string _authToken;
+                
         public Nubank(string login, string password)
-        {
-            _login = login;
-            _password = password;
-            _client = new HttpClient();
-            _endpoints = new Endpoints(_client);
-        }
+            : this(new HttpClient(), login, password)
+        { }
 
         public Nubank(IHttpClient httpClient, string login, string password)
         {
@@ -66,7 +64,7 @@ namespace NubankClient
 
         public async Task AutenticateWithQrCodeAsync(string code)
         {
-            if (string.IsNullOrEmpty(AuthToken))
+            if (string.IsNullOrEmpty(_authToken))
             {
                 await GetTokenAsync();
             }
@@ -94,7 +92,7 @@ namespace NubankClient
                 }
                 throw new AuthenticationException("Unknow error occurred on trying to do login on Nubank using the entered credentials");
             }
-            AuthToken = response["access_token"].ToString();
+            _authToken = response["access_token"].ToString();
         }
 
         private void FillAutenticatedUrls(Dictionary<string, object> response)
@@ -108,21 +106,35 @@ namespace NubankClient
                 .ToDictionary(key => key.Key, key => key.Value);
         }
 
+        public async Task<IEnumerable<Saving>> GetSavingsAsync()
+        {
+            EnsureAuthenticated();
+
+            var response = await _client.PostAsync<GetSavingsResponse>(_endpoints.GraphQl, JObject.Parse(StatementGraphQl), GetHeaders());
+
+            return response.Savings;
+        }       
+       
         public async Task<IEnumerable<Event>> GetEventsAsync()
         {
-            if (string.IsNullOrEmpty(AuthToken))
-            {
-                throw new InvalidOperationException("GetEvents requires the user to be logged in. Make sure that the Login method has been called.");
-            }
+            EnsureAuthenticated();
 
             var response = await _client.GetAsync<GetEventsResponse>(_endpoints.Events, GetHeaders());
             return response.Events;
         }
 
+        private void EnsureAuthenticated()
+        {
+            if (string.IsNullOrEmpty(_authToken))
+            {
+                throw new InvalidOperationException("This operation requires the user to be logged in. Make sure that the Login method has been called.");
+            }
+        }
+
         private Dictionary<string, string> GetHeaders()
         {
             return new Dictionary<string, string> {
-                { "Authorization", $"Bearer {AuthToken}" }
+                { "Authorization", $"Bearer {_authToken}" }
             };
         }
     }
