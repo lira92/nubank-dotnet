@@ -15,7 +15,7 @@ namespace NubankClient.Model.Savings
         public string Title { get; set; }
         public string Detail { get; set; }
         public DateTime PostDate { get; set; }
-        public double Amount { get; set; }
+        public decimal? Amount { get; set; }
         public Account OriginAccount { get; set; }
         public Account DestinationAccount { get; set; }
     }

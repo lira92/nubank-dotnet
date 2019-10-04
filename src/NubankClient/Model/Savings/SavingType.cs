@@ -7,6 +7,14 @@
         TransferInEvent,
         TransferOutEvent,
         BarcodePaymentEvent,
-        CanceledScheduledTransferOutEvent
+        CanceledScheduledTransferOutEvent,
+        AddToReserveEvent,
+        DebitPurchaseEvent,
+        BillPaymentEvent,
+        CanceledScheduledBarcodePaymentRequestEvent,
+        RemoveFromReserveEvent,
+        TransferOutReversalEvent,
+        SalaryPortabilityRequestEvent,
+        SalaryPortabilityRequestApprovalEvent
     }
 }
